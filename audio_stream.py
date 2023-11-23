@@ -31,3 +31,10 @@ logger.info(len(data)*2)
 
 # integer data
 data_int = struct.unpack(str(2 * CHUNK) + 'B', data)
+logger.info(data_int) # data from 0 to 255
+
+# plot the data
+fig, ax = plt.subplots()
+ax.plot(data_int, '-')
+plt.show() 
+# it shows a kind of clipped or split signal
