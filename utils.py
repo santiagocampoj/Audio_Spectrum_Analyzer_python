@@ -57,12 +57,23 @@ def plot_spectrogram(audio_file_path, duration, timestamp, logger, sr):
     vmin = Sxx_log.max() - 110  # You might need to adjust this based on your data
     vmax = Sxx_log.max()
 
-    # Use grayscale colormap for a look similar to Audacity
-    plt.pcolormesh(t, f, Sxx_log, shading='gouraud', cmap='inferno', vmin=vmin, vmax=vmax)
+    # Plot the spectrogram
+    pcm = plt.pcolormesh(t, f, Sxx_log, shading='gouraud', cmap='inferno', vmin=vmin, vmax=vmax)
     plt.ylabel('Frequency [Hz]')
     plt.xlabel('Time [sec]')
     plt.title('Spectrogram')
-    plt.colorbar(label='Intensity [dB]')
+
+    # Create the color bar and set the ticks
+    cbar = plt.colorbar(pcm, label='Intensity [dB]')
+    existing_ticks = cbar.get_ticks()
+
+    # Remove the first and last auto-generated ticks
+    if len(existing_ticks) > 2:
+        existing_ticks = existing_ticks[1:-1]
+
+    # Add vmin and vmax to the existing ticks
+    new_ticks = np.concatenate(([vmin], existing_ticks, [vmax]))
+    cbar.set_ticks(new_ticks)
 
     plt.savefig(f'{timestamp}/spectrogram_{timestamp}.png')  # Save the plot
     logger.info("Spectrogram saved")
