@@ -37,6 +37,7 @@ def record_audio(logger, duration=None):
     audio_file_name = f"recording_{timestamp}.wav"
 
     logger.info("Saving recording...")
+    make_dir(timestamp)
     path_wav = f"{timestamp}/{audio_file_name}"
     sf.write(path_wav, audio, RATE)
 
@@ -103,10 +104,10 @@ def main():
         plot_waveform(audio_file_path, duration, timestamp, logger)
         logger.info("Waveform plotted")
 
-        plot_spectrum(audio_file_path, duration, timestamp, sr, logger)
+        plot_spectrum(audio_file_path, duration, timestamp, logger, sr)
         logger.info("Frequency spectrum plotted")
 
-        plot_spectrogram(audio_file_path, duration, timestamp, sr, logger)
+        plot_spectrogram(audio_file_path, duration, timestamp, logger, sr)
         logger.info("Spectrogram plotted")
 
     else:
@@ -128,10 +129,11 @@ def main():
         logger.info("Waveform plotted")
 
         # Plot the frequency spectrum from the audio file
-        plot_spectrum(audio_file_path, duration, timestamp, logger)
+        plot_spectrum(audio_file_path, duration, timestamp, logger, RATE)
         logger.info("Frequency spectrum plotted")
 
-        plot_spectrogram(audio_file_path, duration, timestamp, sr, logger)
+        
+        plot_spectrogram(audio_file_path, duration, timestamp, logger, RATE)
         logger.info("Spectrogram plotted")
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ def plot_waveform(audio_file_path, duration, timestamp, logger):
     plt.savefig(f'{timestamp}/waveform_{timestamp}.png')
     logger.info("Waveform saved")
 
-def plot_spectrum(audio_file_path, duration, timestamp, sr, logger):
+def plot_spectrum(audio_file_path, duration, timestamp, logger, sr):
     audio_data, _ = sf.read(audio_file_path)
     audio_data_fft = fft(audio_data)
     freqs = fftfreq(len(audio_data), 1 / sr)
@@ -40,7 +40,7 @@ def plot_spectrum(audio_file_path, duration, timestamp, sr, logger):
     plt.savefig(f'{timestamp}/spectrum_{timestamp}.png')
     logger.info("Frequency spectrum saved")
 
-def plot_spectrogram(audio_file_path, duration, timestamp, sr, logger):
+def plot_spectrogram(audio_file_path, duration, timestamp, logger, sr):
     audio_data, _ = sf.read(audio_file_path)  # Read the audio data from the file
 
     plt.figure(figsize=(10, 4))
