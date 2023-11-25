@@ -10,6 +10,16 @@ def make_dir(timestamp):
     if not os.path.exists(timestamp):
         os.makedirs(timestamp)
 
+def trim_audio_start(audio_data, sr, trim_duration, logger):
+    trim_samples = int(sr * trim_duration)
+    if len(audio_data) > trim_samples:
+        logger.info(f"Trimmed {trim_duration}s from start of audio")
+        return audio_data[trim_samples:]
+    else:
+        logger.info("Audio not trimmed. Audio length is less than trim duration")
+        return audio_data
+
+
 def plot_waveform(audio_file_path, duration, timestamp, logger):
     audio_data, _ = sf.read(audio_file_path)
     t = np.linspace(0, duration, len(audio_data))
@@ -29,12 +39,20 @@ def plot_spectrum(audio_file_path, duration, timestamp, logger, sr):
     audio_data_fft = fft(audio_data)
     freqs = fftfreq(len(audio_data), 1 / sr)
 
+    # Calculate amplitude
+    amplitude = np.abs(audio_data_fft)
+
     plt.figure(figsize=(10, 4))
-    plt.plot(freqs, np.abs(audio_data_fft))
+    plt.plot(freqs, amplitude)
     plt.title("Frequency Spectrum")
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude")
     plt.xlim([0, sr / 2])
+
+    # Set y-axis limits dynamically based on the maximum amplitude
+    ymax = np.percentile(amplitude, 99) #(amplitude) * 1.1  # A bit higher than the max amplitude
+    plt.ylim([0, ymax])
+
     plt.legend()
 
     plt.savefig(f'{timestamp}/spectrum_{timestamp}.png')

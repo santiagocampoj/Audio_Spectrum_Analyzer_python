@@ -33,6 +33,10 @@ def record_audio(logger, duration=None):
     sd.wait()
     logger.info("Recording finished")
 
+    # Trim the audio data
+    audio = trim_audio_start(audio, RATE, TRIM_DURATION, logger)
+
+    # Save the audio data
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
     audio_file_name = f"recording_{timestamp}.wav"
 
