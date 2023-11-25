@@ -2,8 +2,6 @@ import sounddevice as sd
 import soundfile as sf
 import speech_recognition as sr
 from constants import *
-import numpy as np
-from scipy.fft import fft, fftfreq
 import os
 import datetime
 os.environ['MPLBACKEND'] = 'Agg'
@@ -64,20 +62,6 @@ def transcribe_audio(audio, logger):
 
     return text
 
-def plot_waveform(audio_file_path, duration, timestamp, logger):
-    audio_data, _ = sf.read(audio_file_path)
-    t = np.linspace(0, duration, len(audio_data))
-
-    plt.figure(figsize=(10, 4))
-
-    plt.plot(t, audio_data)
-    plt.title("Waveform")
-    plt.xlabel("Time [s]")
-    plt.ylabel("Amplitude")
-
-    plt.savefig(f'{timestamp}/waveform_{timestamp}.png')
-    logger.info("Waveform saved")
-
 
 def arg_parser():
     parser = argparse.ArgumentParser(description="Audio stream")
@@ -90,46 +74,44 @@ def main():
     args = arg_parser()
     logger = setup_logging()
 
-    if args.duration:
-        duration = args.duration
-    else:
-        duration = None
-
-    logger.info(f"Constants: DURATION \t{duration}")
-
-    logger.info(f"Constants: CHUNK \t\t{CHUNK}")
-    logger.info(f"Constants: FORMAT \t\t{FORMAT}")
-    logger.info(f"Constants: CHANNELS \t{CHANNELS}")
-    logger.info(f"Constants: RATE \t\t{RATE}")
+    logger.info(f"Constants: CHUNK \t\t{CHUNK} (samples per frame)")
+    logger.info(f"Constants: FORMAT \t\t{FORMAT} (bytes per sample)")
+    logger.info(f"Constants: CHANNELS \t{CHANNELS} (single channel for microphone)")
+    logger.info(f"Constants: RATE \t\t{RATE} (samples per second)")
 
 
     if args.file:
         audio_file_path = args.file
         logger.info(f"Using audio file {audio_file_path}")
 
-        if duration is None:
-            audio_data, sr = sf.read(audio_file_path)
-            duration = len(audio_data) / RATE
+        audio_data, sr = sf.read(audio_file_path)
+        duration = len(audio_data) / sr
 
-        logger.info(f"Duration: {duration}")
+        logger.info(f"Duration: {duration}s")
+        logger.info(f"Sampling rate: {sr} Hz")
 
         if "/" in audio_file_path:
             timestamp = audio_file_path.split("/")[1].split("_")[1].split(".")[0]
-            logger.info(f"Timestamp: {timestamp}")
         else:
             timestamp = audio_file_path.split("_")[1].split(".")[0]
-            logger.info(f"Timestamp: {timestamp}")
 
         make_dir(timestamp)
 
-        logger.info(f"Transcribing audio from {audio_file_path}...")
+        logger.info(f"Transcribing audio {audio_file_path}...")
         text = transcribe_audio(audio_file_path, logger)
 
         plot_waveform(audio_file_path, duration, timestamp, logger)
         logger.info("Waveform plotted")
 
+        plot_spectrum(audio_file_path, duration, timestamp, sr, logger)
+        logger.info("Frequency spectrum plotted")
 
     else:
+        if args.duration:
+            duration = args.duration
+        else:
+            duration = None
+
         # record and get audio file path
         audio_file_path, duration, timestamp = record_audio(logger, duration)
         make_dir(timestamp)
@@ -141,6 +123,10 @@ def main():
         # Plot the waveform from the audio file
         plot_waveform(audio_file_path, duration, timestamp, logger)
         logger.info("Waveform plotted")
+
+        # Plot the frequency spectrum from the audio file
+        plot_spectrum(audio_file_path, duration, timestamp, logger)
+        logger.info("Frequency spectrum plotted")
 
 
 if __name__ == '__main__':
