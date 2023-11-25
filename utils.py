@@ -54,7 +54,7 @@ def plot_spectrogram(audio_file_path, duration, timestamp, logger, sr):
     Sxx_log = 10 * np.log10(Sxx)  # Convert to decibel scale
 
     # Adjust vmin and vmax for better contrast
-    vmin = Sxx_log.max() - 110  # You might need to adjust this based on your data
+    vmin = Sxx_log.max() - 90  # tweak this for gradient
     vmax = Sxx_log.max()
 
     # Plot the spectrogram
@@ -63,17 +63,12 @@ def plot_spectrogram(audio_file_path, duration, timestamp, logger, sr):
     plt.xlabel('Time [sec]')
     plt.title('Spectrogram')
 
-    # Create the color bar and set the ticks
-    cbar = plt.colorbar(pcm, label='Intensity [dB]')
-    existing_ticks = cbar.get_ticks()
+    # Set colorbar ticks
+    tick_interval = 10  # Define the interval of ticks here
+    ticks = np.arange(vmin, vmax + tick_interval, tick_interval)
 
-    # Remove the first and last auto-generated ticks
-    if len(existing_ticks) > 2:
-        existing_ticks = existing_ticks[1:-1]
-
-    # Add vmin and vmax to the existing ticks
-    new_ticks = np.concatenate(([vmin], existing_ticks, [vmax]))
-    cbar.set_ticks(new_ticks)
+    # Create the colorbar with specified ticks
+    cbar = plt.colorbar(pcm, label='Intensity [dB]', ticks=ticks)
 
     plt.savefig(f'{timestamp}/spectrogram_{timestamp}.png')  # Save the plot
     logger.info("Spectrogram saved")

@@ -116,3 +116,21 @@ except KeyboardInterrupt:
     stream.stop_stream()
     stream.close()
     p.terminate()
+
+# Plot the spectrogram
+    pcm = plt.pcolormesh(t, f, Sxx_log, shading='gouraud', cmap='inferno', vmin=vmin, vmax=vmax)
+    plt.ylabel('Frequency [Hz]')
+    plt.xlabel('Time [sec]')
+    plt.title('Spectrogram')
+
+    # Create the color bar and set the ticks
+    cbar = plt.colorbar(pcm, label='Intensity [dB]')
+    existing_ticks = cbar.get_ticks()
+
+    # Remove the first and last auto-generated ticks
+    if len(existing_ticks) > 2:
+        existing_ticks = existing_ticks[1:-1]
+
+    # Add vmin and vmax to the existing ticks
+    new_ticks = np.concatenate(([vmin], existing_ticks, [vmax]))
+    cbar.set_ticks(new_ticks)
