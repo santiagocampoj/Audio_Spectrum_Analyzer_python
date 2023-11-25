@@ -33,7 +33,7 @@ def record_audio(logger, duration=None):
     sd.wait()
     logger.info("Recording finished")
 
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
     audio_file_name = f"recording_{timestamp}.wav"
 
     logger.info("Saving recording...")
@@ -106,6 +106,9 @@ def main():
         plot_spectrum(audio_file_path, duration, timestamp, sr, logger)
         logger.info("Frequency spectrum plotted")
 
+        plot_spectrogram(audio_file_path, duration, timestamp, sr, logger)
+        logger.info("Spectrogram plotted")
+
     else:
         if args.duration:
             duration = args.duration
@@ -128,6 +131,8 @@ def main():
         plot_spectrum(audio_file_path, duration, timestamp, logger)
         logger.info("Frequency spectrum plotted")
 
+        plot_spectrogram(audio_file_path, duration, timestamp, sr, logger)
+        logger.info("Spectrogram plotted")
 
 if __name__ == '__main__':
     main()
