@@ -12,9 +12,15 @@ import time
 from tqdm import tqdm
 from utils import *
 from logger_info import *
+import argparse
 
-def record_audio(logger):
-    duration = int(input("Enter the duration of the recording in seconds: "))
+
+
+def record_audio(logger, duration=None):
+    if duration is not None:
+        logger.info(f"Recording setup for {duration} seconds.")
+    else:
+        duration = int(input("Enter the duration of the recording in seconds: "))
 
     logger.info(f"Recording setup for {duration} seconds.")
     logger.info("Recording audio...")
@@ -74,30 +80,67 @@ def plot_waveform(audio_file_path, duration, timestamp, logger):
 
 
 def arg_parser():
-    pass
-
+    parser = argparse.ArgumentParser(description="Audio stream")
+    parser.add_argument("-d", "--duration", type=int, default=None, help="Duration of the recording in seconds")
+    parser.add_argument("-f", "--file", type=str, default=None, help="Path to audio file")
+    return parser.parse_args()
 
 
 def main():
-    # Setup logging
+    args = arg_parser()
     logger = setup_logging()
+
+    if args.duration:
+        duration = args.duration
+    else:
+        duration = None
+
+    logger.info(f"Constants: DURATION \t{duration}")
 
     logger.info(f"Constants: CHUNK \t\t{CHUNK}")
     logger.info(f"Constants: FORMAT \t\t{FORMAT}")
     logger.info(f"Constants: CHANNELS \t{CHANNELS}")
     logger.info(f"Constants: RATE \t\t{RATE}")
 
-    # Record and get audio file path
-    audio_file_path, duration, timestamp = record_audio(logger)
-    make_dir(timestamp)
 
-    # Transcribe the audio from the file
-    text = transcribe_audio(audio_file_path, logger)
-    logger.info(f"Transcribed text: {text}")
+    if args.file:
+        audio_file_path = args.file
+        logger.info(f"Using audio file {audio_file_path}")
 
-    # Plot the waveform from the audio file
-    plot_waveform(audio_file_path, duration, timestamp, logger)
-    logger.info("Waveform plotted")
+        if duration is None:
+            audio_data, sr = sf.read(audio_file_path)
+            duration = len(audio_data) / RATE
+
+        logger.info(f"Duration: {duration}")
+
+        if "/" in audio_file_path:
+            timestamp = audio_file_path.split("/")[1].split("_")[1].split(".")[0]
+            logger.info(f"Timestamp: {timestamp}")
+        else:
+            timestamp = audio_file_path.split("_")[1].split(".")[0]
+            logger.info(f"Timestamp: {timestamp}")
+
+        make_dir(timestamp)
+
+        logger.info(f"Transcribing audio from {audio_file_path}...")
+        text = transcribe_audio(audio_file_path, logger)
+
+        plot_waveform(audio_file_path, duration, timestamp, logger)
+        logger.info("Waveform plotted")
+
+
+    else:
+        # record and get audio file path
+        audio_file_path, duration, timestamp = record_audio(logger, duration)
+        make_dir(timestamp)
+
+        # transcribe the audio from the file
+        text = transcribe_audio(audio_file_path, logger)
+        logger.info(f"Transcribed text: {text}")
+
+        # Plot the waveform from the audio file
+        plot_waveform(audio_file_path, duration, timestamp, logger)
+        logger.info("Waveform plotted")
 
 
 if __name__ == '__main__':
