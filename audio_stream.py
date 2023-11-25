@@ -30,14 +30,15 @@ def record_audio(logger):
     logger.info("Recording finished")
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
-    audio_file_path = f"recording_{timestamp}.wav"
+    audio_file_name = f"recording_{timestamp}.wav"
 
     logger.info("Saving recording...")
-    sf.write(audio_file_path, audio, RATE)
+    path_wav = f"{timestamp}/{audio_file_name}"
+    sf.write(path_wav, audio, RATE)
 
-    logger.info(f"Recording saved to {audio_file_path}")
+    logger.info(f"Recording saved to {path_wav}")
 
-    return audio_file_path, duration, timestamp
+    return path_wav, duration, timestamp
 
 def transcribe_audio(audio, logger):
     recognizer = sr.Recognizer()
@@ -49,6 +50,7 @@ def transcribe_audio(audio, logger):
         logger.info("Transcribing audio...")
         text = recognizer.recognize_google(audio)
         logger.info(f"Transcribed text: {text}")
+
     except sr.UnknownValueError:
         logger.warning("Could not understand audio")
     except sr.RequestError as e:
@@ -67,7 +69,7 @@ def plot_waveform(audio_file_path, duration, timestamp, logger):
     plt.xlabel("Time [s]")
     plt.ylabel("Amplitude")
 
-    plt.savefig(f'waveform_{timestamp}.png')
+    plt.savefig(f'{timestamp}/waveform_{timestamp}.png')
     logger.info("Waveform saved")
 
 
@@ -80,11 +82,10 @@ def main():
     # Setup logging
     logger = setup_logging()
 
-    logger.info(f"Constants: CHUNK \t{CHUNK}")
-    logger.info(f"Constants: FORMAT \t{FORMAT}")
+    logger.info(f"Constants: CHUNK \t\t{CHUNK}")
+    logger.info(f"Constants: FORMAT \t\t{FORMAT}")
     logger.info(f"Constants: CHANNELS \t{CHANNELS}")
-    logger.info(f"Constants: RATE \t{RATE}")
-
+    logger.info(f"Constants: RATE \t\t{RATE}")
 
     # Record and get audio file path
     audio_file_path, duration, timestamp = record_audio(logger)
@@ -98,7 +99,6 @@ def main():
     plot_waveform(audio_file_path, duration, timestamp, logger)
     logger.info("Waveform plotted")
 
-    logger.info("Program finished")
 
 if __name__ == '__main__':
     main()
