@@ -41,13 +41,24 @@ def plot_spectrum(audio_file_path, duration, timestamp, logger, sr):
     logger.info("Frequency spectrum saved")
 
 def plot_spectrogram(audio_file_path, duration, timestamp, logger, sr):
-    audio_data, _ = sf.read(audio_file_path)  # Read the audio data from the file
+    audio_data, _ = sf.read(audio_file_path)
 
     plt.figure(figsize=(10, 4))
-    
-    f, t, Sxx = signal.spectrogram(audio_data, sr)  # Calculate the spectrogram
 
-    plt.pcolormesh(t, f, 10 * np.log10(Sxx), shading='gouraud', cmap='inferno')
+    # Window size and overlap
+    nperseg = 1024  # Window size
+    noverlap = 768  # Overlap (75%)
+
+    f, t, Sxx = signal.spectrogram(audio_data, sr, window='hann', nperseg=nperseg, noverlap=noverlap)
+
+    Sxx_log = 10 * np.log10(Sxx)  # Convert to decibel scale
+
+    # Adjust vmin and vmax for better contrast
+    vmin = Sxx_log.max() - 110  # You might need to adjust this based on your data
+    vmax = Sxx_log.max()
+
+    # Use grayscale colormap for a look similar to Audacity
+    plt.pcolormesh(t, f, Sxx_log, shading='gouraud', cmap='inferno', vmin=vmin, vmax=vmax)
     plt.ylabel('Frequency [Hz]')
     plt.xlabel('Time [sec]')
     plt.title('Spectrogram')
