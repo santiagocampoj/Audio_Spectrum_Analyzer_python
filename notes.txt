@@ -1,0 +1,118 @@
+# read one chunk
+data = stream.read(CHUNK) # data is a byte string | b'\xa4\xfb\xdd\
+# print(data)
+# logger.info(len(data)) # 4096 * 2 = 8192 bytes
+# logger.info(len(data)*2) 
+
+# integer data
+# data_int = struct.unpack(str(2 * CHUNK) + 'B', data)
+# logger.info(data_int) # data from 0 to 255
+
+# convert it to a numpy array
+data_int = np.array(struct.unpack(str(2 * CHUNK) + 'B', data), dtype='b') + 127 # fall back, avoid clipping (liniarity)
+
+# plot the data
+fig, ax = plt.subplots()
+ax.plot(data_int, '-')
+plt.show() 
+# it shows a kind of clipped or split signal
+
+
+
+
+# Create a PyAudio object
+p = pyaudio.PyAudio()
+
+stream = p.open(
+    format=FORMAT,
+    channels=CHANNELS,
+    rate=RATE,
+    input=True,
+    output=True,
+    frames_per_buffer=CHUNK
+)
+
+# read one chunk
+data = stream.read(CHUNK) # data is a byte string | b'\xa4\xfb\xdd\
+
+data_int = np.array(struct.unpack(str(2 * CHUNK) + 'B', data), dtype='b')[::2] + 127
+
+# plot the data
+fig, ax = plt.subplots()
+ax.plot(data_int, '-')
+plt.show() 
+
+
+
+def record_audio(logger):
+    duration = int(input("Enter the duration of the recording in seconds: "))
+
+    logger.info(f"Recording for {duration} seconds. Start talking...")
+    audio = sd.rec(int(duration * RATE), samplerate=RATE, channels=CHANNELS)
+    sd.wait() 
+
+    logger.info("Recording finished")
+
+    logger.info("Saving recording...")
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+        sf.write(temp_file.name, audio, RATE)
+        audio = temp_file.name
+
+    return audio, duration
+
+
+
+
+import matplotlib
+matplotlib.use('TkAgg')  # Set the backend to TkAgg
+
+import numpy as np
+import pyaudio
+import struct
+import matplotlib.pyplot as plt
+from logger_info import setup_logging
+from constants import *
+
+import time
+
+# Setup logging
+logger = setup_logging()
+
+# Create a PyAudio object
+p = pyaudio.PyAudio()
+
+stream = p.open(
+    format=FORMAT,
+    channels=CHANNELS,
+    rate=RATE,
+    input=True,
+    output=True,
+    frames_per_buffer=CHUNK
+)
+
+plt.ion()
+fig, ax = plt.subplots()
+
+x = np.arange(0, 2 * CHUNK, 2)  # Samples (waveform)
+line, = ax.plot(x, np.random.rand(CHUNK))  # Create empty line
+
+try:
+    while True:
+        logger.debug("Reading from stream...")
+        data = stream.read(CHUNK)  # Read data from the stream
+        logger.debug(f"Raw Data: {data}")
+
+        data_int = np.array(struct.unpack(str(2 * CHUNK) + 'B', data), dtype=np.int16)[::2] + 127 # Convert binary data to integersç
+        logger.debug(f"Data int: {data_int} --- Data int shape: {data_int.shape} --- Data int type: {type(data_int)} --- Data int lenght: {len(data_int)}")
+        time.sleep(10)
+
+        line.set_ydata(data_int)  # Update the line with new data
+        fig.canvas.draw()  # Update the figure
+        fig.canvas.flush_events()  # Flush the GUI events for the figure
+
+
+except KeyboardInterrupt:
+    logger.info("Interrupted by user")
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
