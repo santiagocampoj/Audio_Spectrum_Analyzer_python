@@ -92,12 +92,12 @@ def plot_spectrogram(audio_file_path, duration, timestamp, logger, sr):
     plt.savefig(f'{timestamp}/spectrogram_{timestamp}.png')  # Save the plot
     logger.info("Spectrogram saved")
 
-def plot_mel_spectrogram(audio_file_path, timestamp, logger, sr, n_mels=128):
+def plot_mel_spectrogram(audio_file_path, timestamp, logger, sr, n_mels=256, n_fft=2048, hop_length=512):
     # Load audio data
     audio_data, _ = sf.read(audio_file_path)
 
     # Compute the Mel spectrogram
-    S = librosa.feature.melspectrogram(y=audio_data, sr=sr, n_mels=n_mels)
+    S = librosa.feature.melspectrogram(y=audio_data, sr=sr, n_mels=n_mels, n_fft=n_fft, hop_length=hop_length)
     S_dB = librosa.power_to_db(S, ref=np.max)
 
     # Plotting
@@ -110,6 +110,7 @@ def plot_mel_spectrogram(audio_file_path, timestamp, logger, sr, n_mels=128):
     # Save the Mel Spectrogram plot
     plt.savefig(f'{timestamp}/mel_spectrogram_{timestamp}.png')
     logger.info("Mel Spectrogram plot saved")
+
 
 def plot_mfcc(audio_file_path, timestamp, logger, sr, n_mfcc=18):
     audio_data, _ = sf.read(audio_file_path)
