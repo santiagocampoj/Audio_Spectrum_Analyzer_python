@@ -114,6 +114,13 @@ def main():
         plot_spectrogram(audio_file_path, duration, timestamp, logger, sr)
         logger.info("Spectrogram plotted")
 
+        plot_mel_spectrogram(audio_file_path, timestamp, logger, RATE)
+        logger.info("Mel Spectrogram plotted")
+
+        plot_mfcc(audio_file_path, timestamp, logger, RATE)
+        logger.info("MFCC plotted")
+
+
     else:
         if args.duration:
             duration = args.duration
@@ -136,9 +143,15 @@ def main():
         plot_spectrum(audio_file_path, duration, timestamp, logger, RATE)
         logger.info("Frequency spectrum plotted")
 
-        
         plot_spectrogram(audio_file_path, duration, timestamp, logger, RATE)
         logger.info("Spectrogram plotted")
+
+        plot_mel_spectrogram(audio_file_path, timestamp, logger, RATE)
+        logger.info("Mel Spectrogram plotted")
+
+        plot_mfcc(audio_file_path, timestamp, logger, RATE)
+        logger.info("MFCC plotted")
+
 
 if __name__ == '__main__':
     main()

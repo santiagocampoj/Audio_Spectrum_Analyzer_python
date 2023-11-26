@@ -4,6 +4,7 @@ from scipy.fft import fft, fftfreq
 import soundfile as sf
 import matplotlib.pyplot as plt
 from scipy import signal
+import librosa
 
 def make_dir(timestamp):
     """Make directory if it does not exist."""
@@ -90,3 +91,39 @@ def plot_spectrogram(audio_file_path, duration, timestamp, logger, sr):
 
     plt.savefig(f'{timestamp}/spectrogram_{timestamp}.png')  # Save the plot
     logger.info("Spectrogram saved")
+
+def plot_mel_spectrogram(audio_file_path, timestamp, logger, sr, n_mels=128):
+    # Load audio data
+    audio_data, _ = sf.read(audio_file_path)
+
+    # Compute the Mel spectrogram
+    S = librosa.feature.melspectrogram(y=audio_data, sr=sr, n_mels=n_mels)
+    S_dB = librosa.power_to_db(S, ref=np.max)
+
+    # Plotting
+    plt.figure(figsize=(10, 4))
+    librosa.display.specshow(S_dB, x_axis='time', y_axis='mel', sr=sr, fmax=sr/2)
+    plt.colorbar(format='%+2.0f dB')
+    plt.title('Mel Spectrogram')
+    plt.tight_layout()
+
+    # Save the Mel Spectrogram plot
+    plt.savefig(f'{timestamp}/mel_spectrogram_{timestamp}.png')
+    logger.info("Mel Spectrogram plot saved")
+
+def plot_mfcc(audio_file_path, timestamp, logger, sr, n_mfcc=18):
+    audio_data, _ = sf.read(audio_file_path)
+    
+    # Extract MFCCs
+    mfccs = librosa.feature.mfcc(y=audio_data, sr=sr, n_mfcc=n_mfcc)
+
+    # Plotting
+    plt.figure(figsize=(10, 4))
+    librosa.display.specshow(mfccs, x_axis='time', sr=sr)
+    plt.colorbar()
+    plt.title('MFCC')
+    plt.tight_layout()
+
+    # Save the MFCC plot
+    plt.savefig(f'{timestamp}/mfcc_{timestamp}.png')
+    logger.info("MFCC plot saved")
